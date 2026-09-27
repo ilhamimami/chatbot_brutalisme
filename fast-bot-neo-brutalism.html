@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAST_BOT // v1.0 - Neo-Brutalism Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Neo-Brutalism Color Palette */
+            --bg-primary: #FFE600;
+            --bg-secondary: #F4F0EA;
+            --text-dark: #000000;
+            --text-light: #FFFFFF;
+            --border-thick: #000000;
+            --accent-pink: #FF007A;
+            --accent-blue: #0055FF;
+            --accent-green: #00FF66;
+            --accent-orange: #FF6600;
+            
+            /* Spacing & Sizing */
+            --border-size: 4px;
+            --shadow-offset: 6px;
+            --shadow-color: #000000;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-dark);
+            overflow: hidden;
+        }
+
+        /* === MAIN CONTAINER === */
+        .chatbot-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-primary);
+            border: var(--border-size) solid var(--border-thick);
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--shadow-color);
+        }
+
+        /* === HEADER === */
+        .header {
+            background: var(--text-dark);
+            border-bottom: var(--border-size) solid var(--border-thick);
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            box-shadow: inset 0 -4px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--bg-primary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-green);
+            border: 2px solid var(--border-thick);
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 3px 3px 0px var(--shadow-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-dark);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .timer {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--bg-primary);
+            border: 2px solid var(--bg-primary);
+            padding: 4px 8px;
+            background: transparent;
+        }
+
+        /* === QUICK ACTIONS === */
+        .quick-actions {
+            background: var(--bg-secondary);
+            border-bottom: var(--border-size) solid var(--border-thick);
+            padding: 16px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            flex-wrap: wrap;
+            box-shadow: inset 0 -2px 0px rgba(0, 0, 0, 0.05);
+        }
+
+        .quick-btn {
+            background: var(--text-light);
+            border: 3px solid var(--border-thick);
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 120ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 4px 4px 0px var(--shadow-color);
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px var(--shadow-color);
+        }
+
+        .quick-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--shadow-color);
+        }
+
+        .quick-btn-pink { border-color: var(--accent-pink); }
+        .quick-btn-blue { border-color: var(--accent-blue); }
+        .quick-btn-green { border-color: var(--accent-green); }
+        .quick-btn-orange { border-color: var(--accent-orange); }
+
+        /* === MESSAGES CONTAINER === */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: var(--bg-primary);
+        }
+
+        /* Scrollbar Styling */
+        .messages-container::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+            border-left: 3px solid var(--border-thick);
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: var(--border-thick);
+            border: 2px solid var(--bg-primary);
+            box-shadow: inset 0 0 0 6px var(--bg-primary);
+        }
+
+        /* === MESSAGE BUBBLE === */
+        .message {
+            display: flex;
+            animation: slideIn 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 16px 20px;
+            border: 3px solid var(--border-thick);
+            border-radius: 0;
+            font-size: 14px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .message.user .message-bubble {
+            background: var(--accent-blue);
+            color: var(--text-light);
+            box-shadow: 5px 5px 0px var(--shadow-color);
+        }
+
+        .message.bot .message-bubble {
+            background: var(--text-light);
+            color: var(--text-dark);
+            border-color: var(--border-thick);
+            box-shadow: 5px 5px 0px var(--shadow-color);
+        }
+
+        .message-bubble strong {
+            font-weight: 800;
+        }
+
+        .message-bubble em {
+            font-style: italic;
+        }
+
+        .message-bubble code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            border-radius: 0;
+            border: 1px solid currentColor;
+        }
+
+        .message.user .message-bubble code {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .message-bubble ul, .message-bubble ol {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .message-bubble li {
+            margin: 4px 0;
+        }
+
+        /* === TYPING INDICATOR === */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 16px 20px;
+            background: var(--text-light);
+            border: 3px solid var(--border-thick);
+            box-shadow: 5px 5px 0px var(--shadow-color);
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-dark);
+            border-radius: 50%;
+            animation: typing-animation 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0ms; }
+        .typing-dot:nth-child(2) { animation-delay: 200ms; }
+        .typing-dot:nth-child(3) { animation-delay: 400ms; }
+
+        @keyframes typing-animation {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-8px);
+            }
+        }
+
+        /* === INPUT AREA === */
+        .input-area {
+            background: var(--text-light);
+            border-top: var(--border-size) solid var(--border-thick);
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dark);
+        }
+
+        #messageInput {
+            width: 100%;
+            padding: 14px 16px;
+            border: 3px solid var(--border-thick);
+            border-radius: 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+            background: var(--bg-secondary);
+            resize: none;
+            max-height: 100px;
+            transition: all 120ms;
+            box-shadow: 3px 3px 0px var(--shadow-color);
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: var(--accent-pink);
+            box-shadow: 3px 3px 0px var(--accent-pink);
+        }
+
+        #messageInput::placeholder {
+            color: #888;
+        }
+
+        .send-btn {
+            background: var(--accent-pink);
+            border: 3px solid var(--border-thick);
+            padding: 14px 20px;
+            font-size: 13px;
+            font-weight: 800;
+            font-family: 'Space Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 120ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 4px 4px 0px var(--shadow-color);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .send-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px var(--shadow-color);
+            background: var(--accent-orange);
+        }
+
+        .send-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--shadow-color);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .chatbot-container {
+                box-shadow: none;
+                border: 2px solid var(--border-thick);
+            }
+
+            .header {
+                padding: 16px;
+            }
+
+            .header-title {
+                font-size: 18px;
+            }
+
+            .quick-actions {
+                overflow-x: auto;
+                padding: 12px;
+            }
+
+            .quick-btn {
+                font-size: 11px;
+                padding: 8px 12px;
+            }
+
+            .messages-container {
+                padding: 16px;
+                gap: 12px;
+            }
+
+            .message-bubble {
+                max-width: 85%;
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+
+            #messageInput {
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            .send-btn {
+                padding: 12px 16px;
+                font-size: 12px;
+            }
+
+            .header-right {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 12px;
+            }
+
+            .header-title {
+                font-size: 16px;
+            }
+
+            .quick-actions {
+                padding: 8px;
+                gap: 8px;
+            }
+
+            .quick-btn {
+                font-size: 10px;
+                padding: 6px 10px;
+                box-shadow: 3px 3px 0px var(--shadow-color);
+            }
+
+            .message-bubble {
+                max-width: 90%;
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .input-area {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .send-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-left">
+                <div class="header-title">⚡ FAST_BOT</div>
+                <div class="status-badge">
+                    <span class="status-dot"></span>
+                    ONLINE
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="timer" id="timer">00:00</div>
+            </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="quick-actions">
+            <button class="quick-btn quick-btn-green" onclick="sendQuickMessage('⏰ Jam Operasional')">
+                <span>⏰</span> Jam Operasional
+            </button>
+            <button class="quick-btn quick-btn-blue" onclick="sendQuickMessage('💡 Cara Order')">
+                <span>💡</span> Cara Order
+            </button>
+            <button class="quick-btn quick-btn-orange" onclick="sendQuickMessage('🚀 Harga Layanan')">
+                <span>🚀</span> Harga Layanan
+            </button>
+            <button class="quick-btn quick-btn-pink" onclick="sendQuickMessage('❓ FAQ')">
+                <span>❓</span> FAQ Ringkas
+            </button>
+        </div>
+
+        <!-- MESSAGES CONTAINER -->
+        <div class="messages-container" id="messagesContainer">
+            <div class="message bot">
+                <div class="message-bubble">
+                    👋 Halo! Selamat datang di <strong>FAST_BOT v1.0</strong>. Kami siap membantu Anda dengan cepat dan responsif. Tanyakan apa saja! ⚡
+                </div>
+            </div>
+        </div>
+
+        <!-- INPUT AREA -->
+        <div class="input-area">
+            <div class="input-wrapper">
+                <label class="input-label">💬 Pesan Anda:</label>
+                <textarea 
+                    id="messageInput" 
+                    placeholder="Ketik pertanyaanmu di sini..." 
+                    onkeydown="handleKeyDown(event)"
+                ></textarea>
+            </div>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                KIRIM <span>↵</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ===== KNOWLEDGE BASE / AUTO-REPLY LOGIC =====
+        const knowledgeBase = {
+            // Jam Operasional
+            'jam operasional': {
+                response: 'Kami buka <strong>setiap hari</strong> pukul <strong>08:00 - 21:00 WIB</strong>. Hari Minggu tutup untuk maintenance sistem. Hubungi kami kapan saja! 📞',
+                category: 'operasional'
+            },
+            'jam buka': {
+                response: 'Kami buka <strong>setiap hari</strong> pukul <strong>08:00 - 21:00 WIB</strong>. Hari Minggu tutup untuk maintenance sistem. Hubungi kami kapan saja! 📞',
+                category: 'operasional'
+            },
+            'buka jam berapa': {
+                response: 'Kami buka <strong>setiap hari</strong> pukul <strong>08:00 - 21:00 WIB</strong>. Hari Minggu tutup untuk maintenance sistem. Hubungi kami kapan saja! 📞',
+                category: 'operasional'
+            },
+            
+            // Cara Order
+            'cara order': {
+                response: '<strong>Langkah-langkah order:</strong>\n1️⃣ Pilih produk/layanan yang diinginkan\n2️⃣ Masukkan detail pesanan (alamat, jumlah, dll)\n3️⃣ Konfirmasi pembayaran\n4️⃣ Tunggu konfirmasi dari tim kami\n\nSelesai! Pesananmu akan diproses dengan cepat ⚡',
+                category: 'order'
+            },
+            'bagaimana cara pesan': {
+                response: '<strong>Langkah-langkah order:</strong>\n1️⃣ Pilih produk/layanan yang diinginkan\n2️⃣ Masukkan detail pesanan (alamat, jumlah, dll)\n3️⃣ Konfirmasi pembayaran\n4️⃣ Tunggu konfirmasi dari tim kami\n\nSelesai! Pesananmu akan diproses dengan cepat ⚡',
+                category: 'order'
+            },
+            'cara pemesanan': {
+                response: '<strong>Langkah-langkah order:</strong>\n1️⃣ Pilih produk/layanan yang diinginkan\n2️⃣ Masukkan detail pesanan (alamat, jumlah, dll)\n3️⃣ Konfirmasi pembayaran\n4️⃣ Tunggu konfirmasi dari tim kami\n\nSelesai! Pesananmu akan diproses dengan cepat ⚡',
+                category: 'order'
+            },
+            
+            // Harga Layanan
+            'harga layanan': {
+                response: '<strong>Paket Layanan Kami:</strong>\n💎 <strong>BASIC</strong> - Rp 49.000/bulan\n🏆 <strong>PREMIUM</strong> - Rp 99.000/bulan\n👑 <strong>ENTERPRISE</strong> - Custom (hubungi sales)\n\nDapatkan diskon 20% untuk pembayaran tahunan! 🎉',
+                category: 'harga'
+            },
+            'berapa harganya': {
+                response: '<strong>Paket Layanan Kami:</strong>\n💎 <strong>BASIC</strong> - Rp 49.000/bulan\n🏆 <strong>PREMIUM</strong> - Rp 99.000/bulan\n👑 <strong>ENTERPRISE</strong> - Custom (hubungi sales)\n\nDapatkan diskon 20% untuk pembayaran tahunan! 🎉',
+                category: 'harga'
+            },
+            'price': {
+                response: '<strong>Paket Layanan Kami:</strong>\n💎 <strong>BASIC</strong> - Rp 49.000/bulan\n🏆 <strong>PREMIUM</strong> - Rp 99.000/bulan\n👑 <strong>ENTERPRISE</strong> - Custom (hubungi sales)\n\nDapatkan diskon 20% untuk pembayaran tahunan! 🎉',
+                category: 'harga'
+            },
+            
+            // FAQ
+            'faq': {
+                response: '<strong>FAQ Ringkas:</strong>\n<strong>❓ Apakah ada garansi?</strong> Ya, garansi 30 hari uang kembali 100%.\n<strong>❓ Bisakah cancel kapan saja?</strong> Ya, tanpa biaya tambahan.\n<strong>❓ Berapa waktu respons?</strong> Maksimal 5 menit dari tim kami ⚡',
+                category: 'faq'
+            },
+            
+            // General Greeting
+            'halo': {
+                response: 'Halo! 👋 Ada yang bisa kami bantu? Silakan tanyakan tentang layanan kami atau tekan tombol quick action di atas! 😊',
+                category: 'greeting'
+            },
+            'hai': {
+                response: 'Halo! 👋 Ada yang bisa kami bantu? Silakan tanyakan tentang layanan kami atau tekan tombol quick action di atas! 😊',
+                category: 'greeting'
+            },
+            'hi': {
+                response: 'Halo! 👋 Ada yang bisa kami bantu? Silakan tanyakan tentang layanan kami atau tekan tombol quick action di atas! 😊',
+                category: 'greeting'
+            },
+            'pagi': {
+                response: 'Pagi! 🌅 Ada yang bisa kami bantu hari ini?',
+                category: 'greeting'
+            },
+            'sore': {
+                response: 'Sore! 🌤️ Semoga harimu menyenangkan. Ada yang bisa kami bantu?',
+                category: 'greeting'
+            },
+            'malam': {
+                response: 'Malam! 🌙 Masih ada yang bisa kami layani untuk Anda.',
+                category: 'greeting'
+            },
+            
+            // Terima kasih
+            'terima kasih': {
+                response: 'Sama-sama! 😊 Senang bisa membantu. Jangan ragu untuk bertanya lagi! 🙌',
+                category: 'thanks'
+            },
+            'makasih': {
+                response: 'Sama-sama! 😊 Senang bisa membantu. Jangan ragu untuk bertanya lagi! 🙌',
+                category: 'thanks'
+            },
+            'thanks': {
+                response: 'You\'re welcome! 😊 Feel free to ask anything else!',
+                category: 'thanks'
+            },
+            
+            // Bantuan
+            'bantuan': {
+                response: 'Tentu! 🤝 Kami siap membantu. Apa yang ingin Anda tanyakan? Silakan gunakan quick action buttons atau ketik pertanyaanmu langsung.',
+                category: 'help'
+            },
+            'help': {
+                response: 'Sure! 🤝 We\'re here to help. What would you like to know?',
+                category: 'help'
+            }
+        };
+
+        // Default response untuk input yang tidak dikenali
+        function getDefaultResponse() {
+            const responses = [
+                'Maaf, saya tidak sepenuhnya memahami pertanyaanmu. 🤔 Coba gunakan tombol quick action atau hubungi tim support kami! 📞',
+                'Pertanyaan menarik! Untuk informasi lebih detail, silakan hubungi tim support kami. 📧',
+                'Hmm, saya masih belajar. 📚 Tim support kami siap membantu dengan lebih detail! 💪',
+                'Belum ada data untuk pertanyaan tersebut. Silakan hubungi support kami untuk bantuan lebih lanjut! 🎯'
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // ===== DOM ELEMENTS =====
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const timerEl = document.getElementById('timer');
+
+        // ===== TIMER =====
+        let sessionStartTime = Date.now();
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        setInterval(updateTimer, 1000);
+
+        // ===== MESSAGE HANDLING =====
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.innerHTML = text;
+            
+            messageDiv.appendChild(bubble);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Auto scroll ke bawah
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 50);
+            
+            return messageDiv;
+        }
+
+        function showTypingIndicator() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.id = 'typing-indicator';
+            
+            const indicator = document.createElement('div');
+            indicator.className = 'typing-indicator';
+            indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            
+            messageDiv.appendChild(indicator);
+            messagesContainer.appendChild(messageDiv);
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            return messageDiv;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function findResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase().trim();
+            
+            // Exact match
+            if (knowledgeBase[lowerMessage]) {
+                return knowledgeBase[lowerMessage].response;
+            }
+            
+            // Partial match (contains keyword)
+            for (const key in knowledgeBase) {
+                if (lowerMessage.includes(key)) {
+                    return knowledgeBase[key].response;
+                }
+            }
+            
+            // No match
+            return getDefaultResponse();
+        }
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+            
+            // Disable button & clear input
+            sendBtn.disabled = true;
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // Add user message
+            addMessage(message, true);
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Simulate bot thinking (500-800ms)
+            const delay = 500 + Math.random() * 300;
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                const response = findResponse(message);
+                addMessage(response, false);
+                
+                sendBtn.disabled = false;
+                messageInput.focus();
+            }, delay);
+        }
+
+        function sendQuickMessage(text) {
+            messageInput.value = text;
+            sendMessage();
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+            
+            // Auto-resize textarea
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+        }
+
+        // ===== INIT =====
+        messageInput.focus();
+
+        // Prevent sending empty messages
+        sendBtn.addEventListener('click', sendMessage);
+    </script>
+</body>
+</html>
